@@ -6,6 +6,7 @@ from .footnotes import *
 from .html_comments import *
 from .outlines import *
 from .special_content_sections import *
+from .other_shortcodes import *
 from .step_bible_iframes import *
 from .subject_index import *
 
@@ -173,6 +174,9 @@ def process_content_section_and_build_slides(file_path, content_section, summary
     # Convert shortcodes to STEP Bible iframes
     content_section = replace_nt_step_bible_shortcodes(content_section)
     content_section = replace_ot_step_bible_shortcodes(content_section)
+
+    # Replace properties shortcode with embedded video/audio HTML
+    content_section = replace_properties_shortcodes(content_section)
 
     # Replace special content sections
     content_section = replace_special_content_sections(content_section)
