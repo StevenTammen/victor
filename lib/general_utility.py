@@ -153,6 +153,7 @@ def initial_full_content_processing(full_content_for_aggregation, title, file_pa
   return full_content_for_aggregation
 
 commented_out_slide_break_re_pattern = re.compile(r'<!-- --- -->')
+markdown_header_re_pattern = re.compile('([#]+ .*)')
 # https://blog.finxter.com/python-regex-start-of-line-and-end-of-line/
 h2_header_re_pattern = re.compile(r'^## (.+)', re.MULTILINE)
 def initial_content_section_processing(content_section, title):
@@ -170,7 +171,17 @@ def initial_content_section_processing(content_section, title):
     content_section
   )
 
-  # Add actual page title to the content section, so that the title shows up in the slides.
+  # If there are no content subheaders, we use the page title as the (h3) header on each slide.
+  # A later function will duplicate it across slide breaks if necessary, so here we just stick it
+  # after the slide break for the title slide = where the first content subheader would be
+  # were it to exist
+  headers = markdown_header_re_pattern.findall(content_section)
+  if(len(headers) == 0):
+    # We only replace the first slide break
+    content_section = content_section.replace('---', f'---\n\n### {title}', 1)
+
+  # Regardless if there are or aren't content subheaders, the first slide is always
+  # a title slide with the page title centered as an h2 header
   content_section = f'## {title}{content_section}'
 
   return content_section

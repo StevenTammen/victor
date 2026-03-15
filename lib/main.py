@@ -110,7 +110,7 @@ everything_but_frontmatter_re_pattern = re.compile(r'^---(?:.|\n)+?---\n((?:.|\n
 # the one for the content page, not all the content sections of 
 # any discussion pages associatd with the content page
 content_section_re_pattern = re.compile(r'^{{% content %}}((?:.|\n)+?){{% /content %}}', re.MULTILINE)
-summary_re_pattern = re.compile(r'^## Summary.*\n\n((?:.|\n)+?)(?=\n#)', re.MULTILINE)
+summary_re_pattern = re.compile(r'^## Summary.*\n\n((?:.|\n)+?)(?=(?:\n#|\n{{% content %}}))', re.MULTILINE)
 def get_page_info(file_path, file_as_string, title, weight, discussion_pages_section):
 
   full_content_for_aggregation = everything_but_frontmatter_re_pattern.search(file_as_string).group(1)

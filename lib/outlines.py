@@ -20,9 +20,16 @@ def add_appropriate_things_to_beginning_and_end_of_slides(content_section, summa
   # nor the outline itself
   slide_number = 4
 
-  # The first header is the title slide, so we skip it
+  title_header = headers[0]
+
+  # The first header is the title slide header, so we skip it
   for header in headers[1:]:
     
+    # If the content subheaders match the title header, then it is
+    # because there were no content subheaders, so there should be no outline
+    if('#' + header == title_header):
+      continue
+
     # Get rid of number signs that indicate headers in Markdown
     header_without_number_signs = header.replace('#', '').strip()
 
@@ -50,10 +57,17 @@ def add_appropriate_things_to_beginning_and_end_of_slides(content_section, summa
   # Actually add the newly-constructed outline to the markdown. Add it right after the title slide, and at the very end of the presentation
   # lines = title_slide_break_re_pattern.sub(settings_slide + outline_as_string + '---\n', lines, 1)
   
-  # Add summary and outline to beginning
-  content_section = title_slide_break_re_pattern.sub('---\n\n' + summary_slide + outline_slide + '---\n', content_section, 1)
-  
-  # Add outline to end
-  content_section += "\n\n---\n\n" + outline_slide
+  # We will be adding the summary to the beginning
+  beginning_bit = '---\n\n' + summary_slide
+
+  # And the outline to the beginning too (only if the outline is non-blank)
+  if(outline_as_string == ''):
+    beginning_bit += outline_slide + '---\n'
+
+  content_section = title_slide_break_re_pattern.sub(beginning_bit, content_section, 1)
+
+  # Add outline to the end (only if the outline is non-blank)
+  if(outline_as_string == ''):
+    content_section += "\n\n---\n\n" + outline_slide
 
   return content_section
