@@ -19,12 +19,26 @@ def clean_slides_directory(slides_directory):
 
 title_re_pattern = re.compile(r'^title: (.*)\n', re.MULTILINE)
 def get_page_title(file_as_string):
-  return title_re_pattern.search(file_as_string).group(1)
+  title = title_re_pattern.search(file_as_string).group(1)
+
+  # Sometimes you have to wrap titles in quotes, so that
+  # you can use colons. Because YAML otherwise blocks you.
+  title = title.strip('"')
+
+  # If you ever have title-internal quotes, you have to escape those in YAML.
+  # This properly handles them.
+  return title.replace('\"', '"')
 
 
 weight_re_pattern = re.compile(r'^weight: (.*)\n', re.MULTILINE)
 def get_page_weight(file_as_string):
-  return weight_re_pattern.search(file_as_string).group(1)
+  try:
+    return weight_re_pattern.search(file_as_string).group(1)
+  # If weight does not exist as a frontmatter variable,
+  # transparently return None
+  except AttributeError:
+    return None
+
 
 
 def get_link_from_file_path(file_path):
