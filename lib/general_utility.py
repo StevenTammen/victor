@@ -144,7 +144,7 @@ h2_header_re_pattern = re.compile(r'^## (.+)', re.MULTILINE)
 def initial_content_section_processing(content_section, title):
 
   # First uncomment the slide breaks so that they will be active
-  content_section = commented_out_slide_break_re_pattern.sub('---', content_section)
+  content_section = commented_out_slide_break_re_pattern.sub('\n\n---\n\n', content_section)
 
   # Remove the header saying that this section is the the content.
   # At this point, it will be the only h2 header in the full-text string
