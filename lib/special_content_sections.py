@@ -17,7 +17,7 @@ def add_function(key):
     return func
   return _add_function
 
-slide_break_re_pattern = re.compile('---\n')
+slide_break_re_pattern = re.compile(r'---\n')
 
 
 @add_function('cautionary-note')
@@ -108,8 +108,8 @@ def build_post_hoc_note_section(match_obj):
 
   return special_content_section
 
-text_re_pattern = re.compile('text="(.*?)"')
-src_re_pattern = re.compile('src="(.*?)"')
+text_re_pattern = re.compile(r'text="(.*?)"')
+src_re_pattern = re.compile(r'src="(.*?)"')
 
 @add_function('quote')
 def build_quote_section(match_obj):
@@ -132,7 +132,7 @@ def build_quote_section(match_obj):
 
   return special_content_section
 
-passage_re_pattern = re.compile('p="(.*?)"')
+passage_re_pattern = re.compile(r'p="(.*?)"')
 
 @add_function('scripture')
 def build_scripture_section(match_obj):
@@ -214,7 +214,7 @@ def build_ichthys_translation_section(match_obj):
 # We want lazy quantifiers rather than greedy quantifiers in the regex so that we don't overlap between sections.
 # https://stackoverflow.com/questions/2301285/what-do-lazy-and-greedy-mean-in-the-context-of-regular-expressions
 special_content_section_re_patterns = {section_name:
-  re.compile('{{% ' + section_name + '(.*) %}}((?:.|\n)+?){{% /' + section_name + ' %}}') for section_name in special_content_section_functions }
+  re.compile(r'{{% ' + section_name + r'(.*) %}}((?:.|\n)+?){{% /' + section_name + r' %}}') for section_name in special_content_section_functions }
 
 
 # Assume no nesting of sections of the same type, since regex

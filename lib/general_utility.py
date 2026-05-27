@@ -153,7 +153,7 @@ def initial_full_content_processing(full_content_for_aggregation, title, file_pa
   return full_content_for_aggregation
 
 commented_out_slide_break_re_pattern = re.compile(r'<!-- --- -->')
-markdown_header_re_pattern = re.compile('([#]+ .*)')
+markdown_header_re_pattern = re.compile(r'([#]+ .*)')
 # https://blog.finxter.com/python-regex-start-of-line-and-end-of-line/
 h2_header_re_pattern = re.compile(r'^## (.+)', re.MULTILINE)
 def initial_content_section_processing(content_section, title):

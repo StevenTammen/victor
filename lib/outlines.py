@@ -1,7 +1,7 @@
 import re
 
-markdown_header_re_pattern = re.compile('([#]+ .*)')
-title_slide_break_re_pattern = re.compile('---\n')
+markdown_header_re_pattern = re.compile(r'([#]+ .*)')
+title_slide_break_re_pattern = re.compile(r'---\n')
 
 def remove_duplicates_from_list_while_preserving_order(input_list):
   seen = set()

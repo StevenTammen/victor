@@ -1,13 +1,13 @@
 import re
 
-nt_re_pattern = re.compile('{{% nt (.*) %}}(?:.|\n)+?{{% /nt %}}')
-ot_re_pattern = re.compile('{{% ot (.*) %}}(?:.|\n)+?{{% /ot %}}')
+nt_re_pattern = re.compile(r'{{% nt (.*) %}}(?:.|\n)+?{{% /nt %}}')
+ot_re_pattern = re.compile(r'{{% ot (.*) %}}(?:.|\n)+?{{% /ot %}}')
 
-type_re_pattern = re.compile('t="(.*?)"')
-passage_re_pattern = re.compile('p="(.*?)"')
-height_re_pattern = re.compile('h="(.*?)"')
+type_re_pattern = re.compile(r't="(.*?)"')
+passage_re_pattern = re.compile(r'p="(.*?)"')
+height_re_pattern = re.compile(r'h="(.*?)"')
 
-passage_formatting_re_pattern = re.compile('([a-z]+)([0-9]+)')
+passage_formatting_re_pattern = re.compile(r'([a-z]+)([0-9]+)')
 
 def replace_nt_step_bible_shortcodes(content_section):
   content_section = nt_re_pattern.sub(
