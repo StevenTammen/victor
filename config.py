@@ -98,11 +98,11 @@ bibledocs = Project(
     'ministry-progress-summaries' : 'Ministry Progress Summaries',
 
     'discussion/apologetics-canada/shorter-topical-studies' : 'Discussion',
-    'discussion/ryan-reeves/shorter-topical-studies' : 'Discussion',
+    'discussion/ryan-reeves/longer-topical-studies' : 'Discussion',
     'discussion/ichthys/shorter-topical-studies' : 'Discussion',
     'discussion/ichthys/longer-topical-studies/satanic-rebellion-series' : 'Discussion',
 
-    'discussion/central-baptist-warner-robins/longer-topical-studies/how-to-discern-the-voice-of-god' : 'Discussion',
+    'discussion/central-baptist-warner-robins/longer-topical-studies' : 'Discussion',
 
     'questions-and-answers/reader-correspondence' : 'Reader Q&A',
 
