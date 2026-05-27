@@ -43,6 +43,11 @@ subject_map = {}
 pathlib.Path(slides_directory).mkdir(parents=True, exist_ok=True)
 clean_slides_directory(slides_directory)
 
+# We update the summaries between <!-- summary --> HTML comments every time we run the script
+# The text overwriting what was there before is the current text between the
+# closing YAML --- and the <!--more--> divider
+update_summaries(content_directory)
+
 # Each study is composed of one or more content pages, each of which may have one or more associated discussion pages.
 # The full content of each study ends up aggregated on its aggregation page.
 studies = build_list_of_content_groups_to_process(content_directory, content_type_paths)

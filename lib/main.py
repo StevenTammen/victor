@@ -10,10 +10,29 @@ from .other_shortcodes import *
 from .step_bible_iframes import *
 from .subject_index import *
 
+from pathlib import Path
+
 class Study:
   def __init__(self, aggregation_page_path, content_pages):
     self.aggregation_page_path = aggregation_page_path
     self.content_pages = content_pages
+
+summary_re_pattern = re.compile(r'^---(.|\n)*?^---((.|\n)*?)<!--more-->', re.MULTILINE)
+summary_section_replacement_re_pattern = re.compile(r'<!-- summary -->((.|\n)*?)<!-- summary -->', re.MULTILINE)
+def update_summaries(content_directory):
+  content_directory_path = Path(content_directory)
+  # Find all .md files recursively
+  markdown_file_path_strings = [str(p) for p in content_directory_path.rglob("*.md")]
+  for md_file_path in markdown_file_path_strings:
+    file_content = read_in_file(md_file_path)
+    summary_match_obj = summary_re_pattern.search(file_content)
+    if(summary_match_obj != None):
+      summary = summary_match_obj.group(2)
+      new_summary_section = '<!-- summary -->' + summary + '<!-- summary -->'
+      new_file_content_tuple = summary_section_replacement_re_pattern.subn(new_summary_section, file_content)
+      if(new_file_content_tuple[1] > 0):
+        with safe_open_w(md_file_path) as f:
+          f.writelines(new_file_content_tuple[0])
 
 def study_has_multiple_lessons(study_path):
   subdirectory_paths = [ f.path for f in os.scandir(study_path) if f.is_dir() ]
@@ -70,6 +89,7 @@ def build_list_of_content_groups_to_process(content_directory, content_type_path
   return studies
 
 discussion_pages_section_replacement_re_pattern = re.compile(r'^{{% discussion-pages %}}(?:.|\n)+{{% /discussion-pages %}}', re.MULTILINE)
+summary_bounds_replacement_re_pattern = re.compile(r'<!-- summary -->')
 def process_leaf_page(file_path, study_title, subject_map, discussion_pages_section):
 
   # Replace any back slashes in path with forward slashes
@@ -80,6 +100,9 @@ def process_leaf_page(file_path, study_title, subject_map, discussion_pages_sect
   page_title = get_page_title(file_as_string)
   page_weight = get_page_weight(file_as_string)
   new_file_content = build_subjects_sections_on_page(file_path, file_as_string, study_title, page_title, subject_map)
+
+  # Strip summary indicators so that they do not roll-up to content or aggregation pages
+  new_file_content = summary_bounds_replacement_re_pattern.sub("", new_file_content)
   
   if(discussion_pages_section != ''):
     # f-strings in python get weird with {}. Why we use + concatenation operator
@@ -105,20 +128,19 @@ class Page:
     self.summary = summary
     self.content_section_for_slides = content_section_for_slides
 
-everything_but_frontmatter_re_pattern = re.compile(r'^---(?:.|\n)+?---\n((?:.|\n)+)', re.MULTILINE)
+everything_after_more_re_pattern = re.compile(r'^<!--more-->(\n(?:.|\n)+)', re.MULTILINE)
 # This regular expression just gets the first content section --
 # the one for the content page, not all the content sections of 
 # any discussion pages associatd with the content page
 content_section_re_pattern = re.compile(r'^{{% content %}}((?:.|\n)+?){{% /content %}}', re.MULTILINE)
-summary_re_pattern = re.compile(r'^## Summary.*\n\n((?:.|\n)+?)(?=(?:\n#|\n{{% content %}}))', re.MULTILINE)
 def get_page_info(file_path, file_as_string, title, weight, discussion_pages_section):
 
-  full_content_for_aggregation = everything_but_frontmatter_re_pattern.search(file_as_string).group(1)
-  
   # Only populate summary field if it exists
-  summary = summary_re_pattern.search(full_content_for_aggregation)
+  summary = summary_re_pattern.search(file_as_string)
   if(summary != None):
     summary = summary.group(1)
+
+  full_content_for_aggregation = everything_after_more_re_pattern.search(file_as_string).group(1)
 
   content_section_for_slides = content_section_re_pattern.search(full_content_for_aggregation)
   if(content_section_for_slides != None):
