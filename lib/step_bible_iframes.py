@@ -95,9 +95,9 @@ def build_ot_iframe(match_obj):
     return f'<iframe src="https://www.STEPBible.org/?q=version=THOT|reference={passage}&options=VUN" width="100%" height="{height}"></iframe>'
   elif(iframe_type.lower() == "hebrew-i"):
     return f'<iframe src="https://www.STEPBible.org/?q=version=THOT|version=NASB_th|reference={passage}&options=VUN" width="100%" height="{height}"></iframe>'
-  elif(iframe_type.lower() == "septuagint"):
+  elif(iframe_type.lower() == "lxx"):
     return f'<iframe src="https://www.STEPBible.org/?q=version=THOT|version=LXX|reference={passage}&options=VGN" width="100%" height="{height}"></iframe>'
-  elif(iframe_type.lower() == "septuagint-i"):
+  elif(iframe_type.lower() == "lxx-i"):
     return f'<iframe src="https://www.STEPBible.org/?q=version=THOT|version=LXX|version=NASB_th|reference={passage}&options=VGN" width="100%" height="{height}"></iframe>'
   else:
     raise Exception(f"The iframe type '{iframe_type}' is not valid")
