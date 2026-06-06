@@ -230,7 +230,7 @@ def build_output_file_path(file_path, content_section):
 
 
 
-commented_out_slide_break_re_pattern = re.compile(r'<!-- --- -->')
+commented_out_slide_break_re_pattern = re.compile(r'<!-- slide-break -->')
 
 # Have h2 headers on page for each content section, rather than grabbing title from frontmatter
 content_section_re_pattern = re.compile(r'^## (.+)\n(?:.|\n)+?{{% content %}}((?:.|\n)+?){{% /content %}}', re.MULTILINE)
