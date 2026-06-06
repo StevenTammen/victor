@@ -1,7 +1,21 @@
 import markdown
 import os, shutil
 import re
-from slugify import slugify
+
+# Use my own slugify function rather than slugify.slugify method from package, so that I can ensure
+# that links match between those made via Python and those made via Hugo template
+def slugify(str_to_slugify):
+
+  # 1. No hyphens for apostrophes. So "won't fix" -> "wont-fix" not "won-t-fix"
+  slugified_str = re.sub(r"'", "", str_to_slugify)
+
+  # 2. Replace sequences of one or more non-alphanumeric characters with a single hyphen
+  slugified_str = re.sub(r"[^a-zA-Z0-9]+", "-", slugified_str)
+
+  # 3. Strip trailing hyphens and 4. Convert to lowercase
+  slugified_str = slugified_str.strip("-").lower()
+
+  return slugified_str
 
 # https://stackoverflow.com/questions/49640513/
 def read_in_file(file_path):
@@ -152,7 +166,7 @@ def initial_full_content_processing(full_content_for_aggregation, title, file_pa
 
   return full_content_for_aggregation
 
-commented_out_slide_break_re_pattern = re.compile(r'<!-- --- -->')
+commented_out_slide_break_re_pattern = re.compile(r'<!-- slide-break -->')
 markdown_header_re_pattern = re.compile(r'([#]+ .*)')
 # https://blog.finxter.com/python-regex-start-of-line-and-end-of-line/
 h2_header_re_pattern = re.compile(r'^## (.+)', re.MULTILINE)

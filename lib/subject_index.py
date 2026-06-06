@@ -1,6 +1,8 @@
 import re
-from slugify import slugify
-from .general_utility import read_in_file, safe_open_w, get_link_from_file_path, build_links_for_all_headers
+from .general_utility import read_in_file, safe_open_w, get_link_from_file_path, build_links_for_all_headers, slugify
+
+# -------------------------------------------------------------
+# Methods for building subject index map when processing pages
 
 # https://stackoverflow.com/questions/14692690/access-nested-dictionary-items-via-a-list-of-keys
 def store_subject_link(subject_map, keys_in_order_of_access, link_title, link_value):
@@ -12,16 +14,15 @@ def store_subject_link(subject_map, keys_in_order_of_access, link_title, link_va
     subject_map = subject_map.setdefault(key, {})
   subject_map[link_title] = link_value
 
-
-
-
-def build_single_subject_link(match_obj, page_path, study_title, page_title, header_title, subject_map):
-  
-  subject = match_obj.group(1)
+def add_single_subject_link_to_subject_map(stag, page_path, study_title, page_title, header_title, subject_map):
 
   slugified_section_header = slugify(header_title)
-  slugified_subject = slugify(subject)
-  nested_subject_topics = subject.split(' > ')
+
+  # In case there are missing spaces due to typos
+  nested_subject_topics = re.split(r' ?> ?', stag)
+
+  # In case there are extra spaces in there
+  nested_subject_topics = [topic.strip() for topic in nested_subject_topics]
 
   # Escape quotes, so that when this is injected in a Hugo shortcode, quoted headers are supported
   study_title = study_title.replace('"', '\\"')
@@ -30,69 +31,48 @@ def build_single_subject_link(match_obj, page_path, study_title, page_title, hea
   
   subject_index_link_title = f'{study_title} | {page_title} | {header_title}'
 
-  # Only add header id to link path when appropriate
+  # Only add header id to link path when subject tag is under a header on page, rather than in frontmatter
   subject_index_link_value = f'{get_link_from_file_path(page_path)}/'
   if slugified_section_header != "":
     subject_index_link_value = subject_index_link_value + f'#{slugified_section_header}'
 
   subject_map = store_subject_link(subject_map, nested_subject_topics, subject_index_link_title, subject_index_link_value)
-  
-  return f'<a href="/subject-index/#{slugified_subject}">{subject}</a>'
 
+stags_re_pattern = re.compile(r'stags="(.*)"')
+def process_single_properties_stag_list(match_obj, page_path, study_title, page_title, subject_map):
+  header_title = match_obj.group(1)
+  properties_shortcode_inner = match_obj.group(2)
+  match = stags_re_pattern.search(properties_shortcode_inner)
+  stags_as_string = match.group(1) if match else None
+  if((stags_as_string != None) and (stags_as_string != "")):
+    # In case there are missing spaces due to typos
+    stags_as_array = re.split(r' ?\| ?', stags_as_string)
+    for stag in stags_as_array:
+      add_single_subject_link_to_subject_map(stag, page_path, study_title, page_title, header_title, subject_map)
 
+# Make this match headers and new properties shortcode format, to extract 
+# replace quotes inside stags="" specification with smart quotes
 
-'''
-The subjects section is ignored in three cases:
+# Deal with stags in frontmatter that are not inside properties shortcodes
+header_and_properties_shortcode_re_pattern = re.compile(r'^#+ (.+) \{\#.+\}\n\n{{< properties((?:.|\n)+?)>}}', re.MULTILINE)
+def process_properties_stag_lists_on_page(file_path, file_as_string, study_title, page_title, subject_map):
+  for match in header_and_properties_shortcode_re_pattern.finditer(file_as_string):
+    process_single_properties_stag_list(match, file_path, study_title, page_title, subject_map)
 
-{{< subjects >}}
+frontmatter_stag_list_re_pattern = re.compile(r'stags:((?:\s|\n)*-.+)*', re.MULTILINE)
+frontmatter_stag_hyphen_list_item_re_pattern = re.compile(r'\s*- (.+)', re.MULTILINE)
+def process_frontmatter_stag_list_on_page(file_path, file_as_string, study_title, page_title, subject_map):
+  match = frontmatter_stag_list_re_pattern.search(file_as_string)
+  stag_hyphen_list = match.group(0) if match else None
+  if(stag_hyphen_list):
+    for match in frontmatter_stag_hyphen_list_item_re_pattern.finditer(stag_hyphen_list):
+      stag = match.group(1) if match else None
+      if(stag):
+        # header_title = "" since frontmatter subject links do not have page headers associated with them
+        add_single_subject_link_to_subject_map(stag, file_path, study_title, page_title, "", subject_map)
 
-{{< /subjects >}}
-
-{{< subjects >}}
-{{< /subjects >}}
-
-{{< subjects >}}{{< /subjects >}}
-
-These cases correspond to .Inner lengths of 4, 2, and 0, respectively.
-So we only render the shortcode if .Inner's length is not 4, 2, or 0.
-
-See the subjects.html shortcode
-'''
-subject_re_pattern = re.compile(r'(?:<a .+?>)?([^<\n]+)(?:<\/a>)?', re.MULTILINE)
-def build_single_subjects_section(match_obj, page_path, study_title, page_title, subject_map):
-
-  header_and_opening_tag = match_obj.group(1)
-  header_title = match_obj.group(2)
-  subjects_section = match_obj.group(3)
-  closing_tag = match_obj.group(4)
-
-  # If the header title came in as None, it means we matched a subjects section without an associated header
-  # Subject links to a page as a whole will not have any header defined
-  # This uses an empty string to signify there is no header, rather than None
-  if header_title == None:
-    header_title = ""
-
-  new_subjects_section = subject_re_pattern.sub(lambda match: build_single_subject_link(match, page_path, study_title, page_title, header_title, subject_map), subjects_section)
-
-  return (header_and_opening_tag + new_subjects_section + closing_tag)
-
-header_and_subjects_section_re_pattern = re.compile(r'^((?:#+ (.+) \{\#.+\}\n\n)?{{< subjects >}})((?:.|\n)+?)({{< \/subjects >}})', re.MULTILINE)
-def build_subjects_sections_on_page(file_path, file_as_string, study_title, page_title, subject_map):
-  new_file_content = build_links_for_all_headers(file_as_string)
-  new_file_content = header_and_subjects_section_re_pattern.sub(lambda match: build_single_subjects_section(match, file_path, study_title, page_title, subject_map), new_file_content)
-  return new_file_content
-
-
-
-
-subjects_section_re_pattern = re.compile(r'^{{< subjects >}}(?:.|\n)+?{{< \/subjects >}}', re.MULTILINE)
-def strip_subjects_sections(content_section):
-  content_section_without_subjects_sections = subjects_section_re_pattern.sub('', content_section)
-  return content_section_without_subjects_sections
-
-
-
-
+# -------------------------------------------------------------
+# Methods for turning the subject index map dict into the subject index page itself
 
 
 def get_content_type_name(link, content_types):
@@ -114,8 +94,6 @@ def build_header_on_subject_index_page(topic):
   for i in range(levels_nested):
     markdown_header_prefix = markdown_header_prefix + '#'
   return markdown_header_prefix + ' ' + topic
-
-
 
 def add_links_for_topic(output, topic, topic_dict, content_types):
   
@@ -164,9 +142,6 @@ page-title="{page_title}"
 
   return output
 
-
-
-
 subject_index_replacement_re_pattern = re.compile(r'^<!-- subject-index -->(?:.|\n)+<!-- subject-index -->', re.MULTILINE)
 def build_subject_index(subject_map, content_directory, content_types):
   
@@ -186,51 +161,3 @@ def build_subject_index(subject_map, content_directory, content_types):
       file_content
     )
     f.writelines(new_file_content)
-
-
-
-
-
-
-
-
-
-
-
-
-
-example_subjects_section = '''Jesus Christ > Divinity
-God > Omniscience > Foreknowledge
-God > Character of
-'''
-
-example_subjects_section_a_tags = '''<a href="/subject-index/#subject-1">God > Character of</a>
-<a href="/subject-index/#subject-2">God > Omniscience > Foreknowledge</a>
-<a href="/subject-index/#subject-3">Jesus Christ > Divinity</a>
-'''
-
-'''
-Scratch
-
-
-subject_map = {}
-store_subject_link(subject_map, ["God"], 'Theology, §<em>Section 1</em>', "/shorter-topical-studies/theology/#section1")
-store_subject_link(subject_map, ["God"], 'Theology, §<em>Section 2</em>', "/longer-topical-studies/theology/#section2")
-store_subject_link(subject_map, ["God", "Omniscience"], 'Theology, §<em>Omniscience</em>', "/questions-and-answers/self-generated/theology/#omniscience")
-store_subject_link(subject_map, ["God", "Omnipotence"], 'Theology, §<em>Omnipotence</em>', "/questions-and-answers/reader-correspondence/theology/#omnipotence")
-store_subject_link(subject_map, ["God", "Omniscience", "Foreknowledge"], 'Theology, §<em>Foreknowledge</em>', "/verse-by-verse-studies/theology/#omniscience")
-
-build_subject_index(subject_map)
-
-
-
-
-build_subjects_section(example_subjects_section, '/shorter-topical-studies/study-1', 'Study 1', 'This is a header', subject_map)
-build_subjects_section(example_subjects_section_a_tags, '/longer-topical-studies/study-2', 'Study 2', 'A fantastic section', subject_map)
-
-print(subject_map)
-
-
-
-
-'''

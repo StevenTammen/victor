@@ -99,7 +99,9 @@ def process_leaf_page(file_path, study_title, subject_map, discussion_pages_sect
 
   page_title = get_page_title(file_as_string)
   page_weight = get_page_weight(file_as_string)
-  new_file_content = build_subjects_sections_on_page(file_path, file_as_string, study_title, page_title, subject_map)
+  new_file_content = build_links_for_all_headers(file_as_string)
+  process_frontmatter_stag_list_on_page(file_path, file_as_string, study_title, page_title, subject_map)
+  process_properties_stag_lists_on_page(file_path, file_as_string, study_title, page_title, subject_map)
 
   # Strip summary indicators so that they do not roll-up to content or aggregation pages
   new_file_content = summary_bounds_replacement_re_pattern.sub("", new_file_content)
@@ -110,10 +112,6 @@ def process_leaf_page(file_path, study_title, subject_map, discussion_pages_sect
       "{{% discussion-pages %}}" + discussion_pages_section + "{{% /discussion-pages %}}",
       new_file_content
     )
-
-  # Ensure all subjects in subjects sections are overwritten with the proper hyperlink format
-  with safe_open_w(file_path) as f:
-    f.writelines(new_file_content)
 
   page = get_page_info(file_path, new_file_content, page_title, page_weight, discussion_pages_section)
 
@@ -182,7 +180,6 @@ def process_content_section_and_build_slides(file_path, content_section, summary
     content_section = strip_discussion_pages(content_section)
     content_section = strip_video_only_sections(content_section)
     content_section = strip_html_comments(content_section)
-    content_section = strip_subjects_sections(content_section)
 
     # Add duplicate headers to slides, as necessary
     content_section = add_duplicate_headers_as_necessary(content_section)
