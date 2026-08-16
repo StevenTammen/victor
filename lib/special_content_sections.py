@@ -110,6 +110,10 @@ def build_post_hoc_note_section(match_obj):
 
 text_re_pattern = re.compile(r'text="(.*?)"')
 src_re_pattern = re.compile(r'src="(.*?)"')
+work_re_pattern = re.compile(r'work="(.*?)"')
+workurl_re_pattern = re.compile(r'workurl="(.*?)"')
+author_re_pattern = re.compile(r'author="(.*?)"')
+authorurl_re_pattern = re.compile(r'authorurl="(.*?)"')
 
 @add_function('quote')
 def build_quote_section(match_obj):
@@ -119,10 +123,16 @@ def build_quote_section(match_obj):
   
   opening_tag = f'<div class="special-content quote">\n'
 
-  if(parameters != ""):
+  if(src_re_pattern.search(parameters)):
     src = (src_re_pattern.search(parameters)).group(1)
     text = (text_re_pattern.search(parameters)).group(1)
     header = '<strong>\n' + f'<a href="/site/content-features/#quotes">Quote</a> from <a href="{src}">{text}</a>\n' + '</strong>'
+  elif(work_re_pattern.search(parameters)):
+    work = (work_re_pattern.search(parameters)).group(1)
+    work_url = (workurl_re_pattern.search(parameters)).group(1)
+    author = (author_re_pattern.search(parameters)).group(1)
+    author_url = (authorurl_re_pattern.search(parameters)).group(1)
+    header = '<strong>\n' + f'<a href="/site/content-features/#quotes">Quote</a> from <a href="{work_url}"><i>{work}</i></a> by <a href="{author_url}">{author}</a>\n' + '</strong>'
   else:
     header = '<strong>\n' + '<a href="/site/content-features/#quotes">Quote</a>\n' + '</strong>'
   
