@@ -1,4 +1,5 @@
 import os
+import psutil
 
 from .general_utility import *
 from .duplicate_headers import *
@@ -11,6 +12,18 @@ from .step_bible_iframes import *
 from .subject_index import *
 
 from pathlib import Path
+
+
+def dropbox_is_running() -> bool:
+    """Check if Dropbox.exe is currently running on Windows."""
+    for proc in psutil.process_iter(['name']):
+        try:
+            if proc.info['name'] and proc.info['name'].lower() == 'dropbox.exe':
+                return True
+           
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            pass
+    return False
 
 class Study:
   def __init__(self, aggregation_page_path, content_pages):

@@ -27,6 +27,10 @@ from config import *
 from lib.main import *
 
 
+# Short circuit if Dropbox is running. Slides regeneration doesn't play nice with Dropbox active,
+# so we don't allow the script to run iof Dropbox is active.
+if(dropbox_is_running):
+  raise Exception("Dropbox is running, which won't play nice with slides regeneration. Please quit Dropbox, and then run victor again.")
 
 # For now, just manually switch the build project in the config file, and hardcode
 # things here.
