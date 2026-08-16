@@ -19,11 +19,13 @@ example = Project(
 
 bibledocs = Project(
   "BibleDocs.org",
-  "C:/R/bibledocs.org/",
+  "C:/Users/steve/Dropbox/bibledocs.org/",
   {
     'shorter-topical-studies' : 'Shorter Topical',
 
     'longer-topical-studies' : 'Longer Topical',
+
+    'live-content' : 'Live Content',
 
     'questions-and-answers/self-generated' : 'Self-gen Q&A',
     'questions-and-answers/reader-correspondence' : 'Reader Q&A',
@@ -95,7 +97,7 @@ bibledocs = Project(
     # 'verse-by-verse-studies/jude' : 'Jude',
     # 'verse-by-verse-studies/revelation' : 'Revelation',
 
-    'ministry-progress-summaries' : 'Ministry Progress Summaries',
+    'blog' : 'Blog',
 
     'discussion/apologetics-canada/shorter-topical-studies' : 'Discussion',
     'discussion/ryan-reeves/longer-topical-studies' : 'Discussion',
