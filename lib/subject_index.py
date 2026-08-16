@@ -152,7 +152,7 @@ def build_subject_index(subject_map, content_directory, content_types):
 
   output = build_links_for_all_headers(output)
 
-  subject_index_path = content_directory + 'subject-index.md'
+  subject_index_path = content_directory + 'meta/' + 'subject-index.md'
 
   file_content = read_in_file(subject_index_path)
   with safe_open_w(subject_index_path) as f:
